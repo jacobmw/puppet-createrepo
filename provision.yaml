@@ -1,0 +1,11 @@
+---
+default:
+  provisioner: docker
+  images:
+    - litmusimage/rockylinux:8
+    - litmusimage/rockylinux:9
+debian:
+  provisioner: docker
+  images:
+    - litmusimage/debian:11
+    - litmusimage/debian:12

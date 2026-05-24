@@ -1,7 +1,14 @@
 fixtures:
-    repositories:
-        stdlib:
-            repo: "git://github.com/puppetlabs/puppetlabs-stdlib.git"
-            ref: "4.0.0"
-    symlinks:
-        "createrepo": "#{source_dir}"
+  forge_modules:
+    stdlib:
+      repo: 'puppetlabs/stdlib'
+      ref: '9.7.0'
+    cron_core:
+      repo: 'puppetlabs/cron_core'
+      ref: '2.0.2'
+  symlinks:
+    createrepo: "#{source_dir}"
+  repositories:
+    facts: 'https://github.com/puppetlabs/puppetlabs-facts.git'
+    puppet_agent: 'https://github.com/puppetlabs/puppetlabs-puppet_agent.git'
+    provision: 'https://github.com/puppetlabs/provision.git'
