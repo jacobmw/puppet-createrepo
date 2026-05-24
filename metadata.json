@@ -1,44 +1,49 @@
 {
-  "name": "palli-createrepo",
-  "version": "3.0.0",
+  "name": "pdemonaco-createrepo",
+  "version": "4.0.0",
   "author": "Pall Valmundsson",
   "summary": "Manages creation of yum repositories",
-  "license": "GPL-3.0+",
-  "source": "https://github.com/pall-valmundsson/puppet-createrepo.git",
-  "project_page": "https://github.com/pall-valmundsson/puppet-createrepo",
-  "issues_url": "https://github.com/pall-valmundsson/puppet-createrepo/issues",
+  "license": "GPL-3.0-or-later",
+  "source": "https://github.com/pdemonaco/puppet-createrepo.git",
+  "project_page": "https://github.com/pdemonaco/puppet-createrepo",
+  "issues_url": "https://github.com/pdemonaco/puppet-createrepo/issues",
   "dependencies": [
     {
       "name": "puppetlabs/stdlib",
-      "version_requirement": ">=4.0.0"
+      "version_requirement": ">= 9.0.0 < 10.0.0"
+    },
+    {
+      "name": "puppetlabs/cron_core",
+      "version_requirement": ">= 1.0.0 < 3.0.0"
     }
   ],
   "operatingsystem_support": [
     {
       "operatingsystem": "RedHat",
       "operatingsystemrelease": [
-        "5.0",
-        "6.0",
-        "7.0"
+        "8",
+        "9"
+      ]
+    },
+    {
+      "operatingsystem": "Rocky",
+      "operatingsystemrelease": [
+        "8",
+        "9"
       ]
     },
     {
       "operatingsystem": "Debian",
       "operatingsystemrelease": [
-        "7"
-      ]
-    },
-    {
-      "operatingsystem": "Ubuntu",
-      "operatingsystemrelease": [
-        "12.04"
+        "11",
+        "12"
       ]
     }
   ],
   "requirements": [
     {
       "name": "puppet",
-      "version_requirement": ">= 3.8.0 < 6.0.0"
+      "version_requirement": ">= 7.24 < 9.0.0"
     }
   ],
   "tags": [
@@ -47,7 +52,6 @@
     "yum",
     "createrepo"
   ],
-  "description": "Creates yum repositories and installs cron jobs to update metadata.",
   "pdk-version": "3.4.0",
   "template-url": "pdk-default#3.4.0",
   "template-ref": "tags/3.4.0-0-gd3cc13f"

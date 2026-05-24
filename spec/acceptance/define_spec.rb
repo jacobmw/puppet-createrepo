@@ -1,133 +1,113 @@
+# frozen_string_literal: true
+
 require 'spec_helper_acceptance'
 
-FUTURE_PARSER = ENV['FUTURE_PARSER'] == 'yes'
+describe 'createrepo define' do
+  before(:all) do
+    install_createrepo_prereqs
+  end
 
-describe 'createrepo define:', :unless => UNSUPPORTED_PLATFORMS.include?(fact('osfamily')) do
-  context 'basic usage:' do
-    it 'should work with no errors' do
-      pp = <<-EOS
-        file { '/var/yumrepos': ensure => directory, }
-        file { '/var/cache/yumrepos': ensure => directory, }
+  context 'basic usage' do
+    let(:manifest) do
+      <<~PP
+        file { ['/var/yumrepos', '/var/cache/yumrepos']:
+          ensure => directory,
+        }
         createrepo { 'test-repo': }
-      EOS
+      PP
+    end
 
-      apply_manifest(pp, :catch_failures => true)
-      expect(apply_manifest(pp, :catch_failures => true, :future_parser => FUTURE_PARSER).exit_code).to be_zero
+    it 'applies idempotently' do
+      idempotent_apply(manifest)
     end
 
     describe file('/var/yumrepos/test-repo/repodata') do
-      it { should be_directory }
-    end
-
-    describe cron do
-      it { should have_entry('*/10 * * * * /usr/local/bin/createrepo-update-test-repo').with_user('root') }
+      it { is_expected.to be_directory }
     end
 
     describe file('/usr/local/bin/createrepo-update-test-repo') do
-      it { should be_file }
-      it { should be_mode '755' }
-      it { should be_owned_by 'root' }
-      it { should be_grouped_into 'root' }
-      if fact('osfamily') != 'RedHat'
-        it { should contain '/usr/bin/createrepo --cachedir /var/cache/yumrepos/test-repo --update /var/yumrepos/test-repo' }
-      else
-        it { should contain '/usr/bin/createrepo --cachedir /var/cache/yumrepos/test-repo --changelog-limit 5 --update /var/yumrepos/test-repo' }
-      end
-    end
-  end
-
-  if fact('osfamily') == 'RedHat' and fact('operatingsystemmajrelease') == '7'
-    context 'with createrepo_c package:' do
-      it 'should work with no errors' do
-        pp = <<-EOS
-          file { '/var/yumrepos': ensure => directory, }
-          file { '/var/cache/yumrepos': ensure => directory, }
-          createrepo { 'test-repo': createrepo_package => 'createrepo_c', createrepo_cmd => '/usr/bin/createrepo_c', }
-        EOS
-
-        apply_manifest(pp, :catch_failures => true)
-        expect(apply_manifest(pp, :catch_failures => true, :future_parser => FUTURE_PARSER).exit_code).to be_zero
-      end
-
-      describe file('/usr/local/bin/createrepo-update-test-repo') do
-        it { should be_file }
-        it { should be_mode '755' }
-        it { should be_owned_by 'root' }
-        it { should be_grouped_into 'root' }
-        it { should contain '/usr/bin/createrepo_c --cachedir /var/cache/yumrepos/test-repo --changelog-limit 5 --update /var/yumrepos/test-repo' }
-      end
-    end
-  end
-
-  context 'with slash in repo name:' do
-    it 'should work with no errors' do
-      pp = <<-EOS
-        file { '/var/yumrepos': ensure => directory, }
-        file { '/var/yumrepos/el6': ensure => directory, }
-        file { '/var/cache/yumrepos': ensure => directory, }
-        file { '/var/cache/yumrepos/el6': ensure => directory, }
-        createrepo { 'el6/test-repo': }
-      EOS
-
-      apply_manifest(pp, :catch_failures => true)
-      expect(apply_manifest(pp, :catch_failures => true, :future_parser => FUTURE_PARSER).exit_code).to be_zero
-    end
-
-    describe file('/var/yumrepos/el6/test-repo/repodata') do
-      it { should be_directory }
+      it { is_expected.to be_file }
+      it { is_expected.to be_mode 755 }
+      it { is_expected.to be_owned_by 'root' }
+      it { is_expected.to be_grouped_into 'root' }
+      it { is_expected.to contain '--update /var/yumrepos/test-repo' }
     end
 
     describe cron do
-      it { should have_entry('*/10 * * * * /usr/local/bin/createrepo-update-el6-test-repo').with_user('root') }
-    end
-
-    describe file('/usr/local/bin/createrepo-update-el6-test-repo') do
-      it { should be_file }
-      it { should be_mode '755' }
-      it { should be_owned_by 'root' }
-      it { should be_grouped_into 'root' }
-      if fact('osfamily') != 'RedHat'
-        it { should contain '/usr/bin/createrepo --cachedir /var/cache/yumrepos/el6/test-repo --update /var/yumrepos/el6/test-repo' }
-      else
-        it { should contain '/usr/bin/createrepo --cachedir /var/cache/yumrepos/el6/test-repo --changelog-limit 5 --update /var/yumrepos/el6/test-repo' }
-      end
+      it { is_expected.to have_entry('*/10 * * * * /usr/local/bin/createrepo-update-test-repo').with_user('root') }
     end
   end
 
-  context 'with mixed owner/group and recurse set and ignore on repodata directory' do
-    it 'should not affect the repodata directory' do
-      pp = <<-EOS
-        file { '/var/yumrepos': ensure => directory, }
-        file { '/var/cache/yumrepos': ensure => directory, }
-        createrepo { 'test-repo-ignore':
-          repo_owner => 'root',
-          repo_group => 'daemon',
-          repo_recurse => true,
-          repo_ignore => ['repodata'],
+  context 'with createrepo_c package', if: os[:family] =~ %r{redhat|rocky|centos} do
+    let(:manifest) do
+      <<~PP
+        file { ['/var/yumrepos', '/var/cache/yumrepos']:
+          ensure => directory,
         }
-      EOS
+        createrepo { 'test-repo-c':
+          createrepo_package => 'createrepo_c',
+          createrepo_cmd     => '/usr/bin/createrepo_c',
+        }
+      PP
+    end
 
-      apply_manifest(pp, :catch_failures => true)
-      expect(apply_manifest(pp, :catch_failures => true, :future_parser => FUTURE_PARSER).exit_code).to be_zero
-      shell('ls -l /var/yumrepos/test-repo-ignore') # will only show in debug
-      # Run createrepo as root, this will change the group of repodata to root
-      shell('/usr/local/bin/createrepo-update-test-repo-ignore')
-      shell('ls -l /var/yumrepos/test-repo-ignore') # will only show in debug
-      # Running the manifest again to ensure idempotency with recurse as we're ignoring the repodata directory
-      expect(apply_manifest(pp, :catch_failures => true, :future_parser => FUTURE_PARSER).exit_code).to be_zero
-      shell('ls -l /var/yumrepos/test-repo-ignore') # will only show in debug
+    it 'applies idempotently' do
+      idempotent_apply(manifest)
+    end
+
+    describe file('/usr/local/bin/createrepo-update-test-repo-c') do
+      it { is_expected.to contain '/usr/bin/createrepo_c --cachedir /var/cache/yumrepos/test-repo-c --changelog-limit 5 --update /var/yumrepos/test-repo-c' }
+    end
+  end
+
+  context 'with slash in repo name' do
+    let(:manifest) do
+      <<~PP
+        file { ['/var/yumrepos', '/var/yumrepos/el', '/var/cache/yumrepos', '/var/cache/yumrepos/el']:
+          ensure => directory,
+        }
+        createrepo { 'el/test-repo': }
+      PP
+    end
+
+    it 'applies idempotently' do
+      idempotent_apply(manifest)
+    end
+
+    describe file('/var/yumrepos/el/test-repo/repodata') do
+      it { is_expected.to be_directory }
+    end
+
+    describe file('/usr/local/bin/createrepo-update-el-test-repo') do
+      it { is_expected.to be_file }
+    end
+  end
+
+  context 'with repo_recurse and repo_ignore' do
+    let(:manifest) do
+      <<~PP
+        file { ['/var/yumrepos', '/var/cache/yumrepos']:
+          ensure => directory,
+        }
+        createrepo { 'test-repo-ignore':
+          repo_owner   => 'root',
+          repo_group   => 'daemon',
+          repo_recurse => true,
+          repo_ignore  => ['repodata'],
+        }
+      PP
+    end
+
+    it 'applies idempotently after running the update script' do
+      apply_manifest(manifest, catch_failures: true)
+      run_shell('/usr/local/bin/createrepo-update-test-repo-ignore')
+      apply_manifest(manifest, catch_changes: true)
     end
 
     describe file('/var/yumrepos/test-repo-ignore/repodata') do
-      it { should be_directory }
-      it { should be_owned_by 'root' }
-      # Initially the repodata directory will be owned by wheel
-      # but when updating the repo the group of repodata will
-      # become root and as the repo_ignore parameter is set
-      # to ignore it the repo_recurse parameter will not affect
-      # the group of the directory
-      it { should be_grouped_into 'root' }
+      it { is_expected.to be_directory }
+      it { is_expected.to be_owned_by 'root' }
+      it { is_expected.to be_grouped_into 'root' }
     end
-
   end
 end
