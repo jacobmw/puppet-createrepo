@@ -29,7 +29,7 @@ jobs:
             exit 1
           fi
           echo "RELEASE_VERSION=${version}" >> "${GITHUB_ENV}"
-          echo "RELEASE_TAG=${version}" >> "${GITHUB_ENV}"
+          echo "RELEASE_TAG=v${version}" >> "${GITHUB_ENV}"
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -42,25 +42,30 @@ jobs:
           bundle config set --local with 'development release_prep'
           bundle install --jobs 4 --retry 3
 
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
       - name: Generate REFERENCE.md
         run: |
           bundle exec rake strings:generate:reference
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if [ -n "$(git status --porcelain REFERENCE.md)" ]; then
             git add REFERENCE.md
             git commit -m "docs(reference): update REFERENCE.md"
           fi
 
       - name: Generate changelog
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --verbose
         env:
-          CHANGELOG_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bundle exec rake changelog
+          OUTPUT: CHANGELOG.md
+          GITHUB_REPO: ${{ github.repository }}
 
       - name: Commit changelog
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if [ -n "$(git status --porcelain CHANGELOG.md)" ]; then
             git add CHANGELOG.md
             git commit -m "chore(changelog): update ${RELEASE_VERSION} changelog"
