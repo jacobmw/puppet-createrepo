@@ -7,14 +7,11 @@
   "source": "https://github.com/pall-valmundsson/puppet-createrepo.git",
   "project_page": "https://github.com/pall-valmundsson/puppet-createrepo",
   "issues_url": "https://github.com/pall-valmundsson/puppet-createrepo/issues",
-  "tags": [
-    "repositories",
-    "repository",
-    "yum",
-    "createrepo"
-  ],
-  "requirements": [
-    {"name": "puppet", "version_requirement": ">= 3.8.0 < 6.0.0"}
+  "dependencies": [
+    {
+      "name": "puppetlabs/stdlib",
+      "version_requirement": ">=4.0.0"
+    }
   ],
   "operatingsystem_support": [
     {
@@ -38,11 +35,20 @@
       ]
     }
   ],
-  "description": "Creates yum repositories and installs cron jobs to update metadata.",
-  "dependencies": [
+  "requirements": [
     {
-      "name": "puppetlabs/stdlib",
-      "version_requirement": ">=4.0.0"
+      "name": "puppet",
+      "version_requirement": ">= 3.8.0 < 6.0.0"
     }
-  ]
+  ],
+  "tags": [
+    "repositories",
+    "repository",
+    "yum",
+    "createrepo"
+  ],
+  "description": "Creates yum repositories and installs cron jobs to update metadata.",
+  "pdk-version": "3.4.0",
+  "template-url": "pdk-default#3.4.0",
+  "template-ref": "tags/3.4.0-0-gd3cc13f"
 }
