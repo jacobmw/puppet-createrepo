@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.0.1] - 2026-05-25
+
+
+### Other
+
+- *(changelog)* Generation ordering
+
+- Merge pull request #3 from pdemonaco/fix-metadata-and-changelog
+
+ci(changelog): generation ordering
+
+
 ## [4.0.0] - 2026-05-24
 
 
