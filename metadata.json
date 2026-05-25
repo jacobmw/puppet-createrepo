@@ -1,7 +1,7 @@
 {
-  "name": "pdemonaco-createrepo",
-  "version": "4.0.0",
-  "author": "Pall Valmundsson",
+  "name": "pdemon-createrepo",
+  "version": "4.0.1",
+  "author": "Phil DeMonaco",
   "summary": "Manages creation of yum repositories",
   "license": "GPL-3.0-or-later",
   "source": "https://github.com/pdemonaco/puppet-createrepo.git",
